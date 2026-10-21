@@ -1,0 +1,265 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+class Patient {
+public:
+    int id, age, discharged;
+    string name, disease, doctor;
+    float bill, paid;
+
+    void addPatient() {
+        cout << "Enter Patient ID: ";
+        cin >> id;
+
+        cout << "Enter Name: ";
+        cin >> name;
+
+        cout << "Enter Age: ";
+        cin >> age;
+
+        cout << "Enter Disease: ";
+        cin >> disease;
+
+        cout << "Enter Doctor Name: ";
+        cin >> doctor;
+
+        cout << "Enter Total Bill: ";
+        cin >> bill;
+
+        paid = 0;
+        discharged = 0;
+
+        ofstream file("hospital.txt", ios::app);
+        file << id << " " << name << " " << age << " "
+             << disease << " " << doctor << " "
+             << bill << " " << paid << " "
+             << discharged << endl;
+        file.close();
+
+        cout << "Patient Added Successfully!\n";
+    }
+
+    void displayPatients() {
+        ifstream file("hospital.txt");
+
+        cout << "\n--- Patient Records ---\n";
+
+        while (file >> id >> name >> age >> disease
+                    >> doctor >> bill >> paid >> discharged) {
+            cout << "\nPatient ID: " << id;
+            cout << "\nName: " << name;
+            cout << "\nDisease: " << disease;
+            cout << "\nDoctor: " << doctor;
+            cout << "\nTotal Bill: Rs. " << bill;
+            cout << "\nPaid: Rs. " << paid;
+            cout << "\nBalance: Rs. " << bill - paid;
+            cout << "\nStatus: "
+                 << (discharged ? "Discharged" : "Admitted")
+                 << endl;
+        }
+
+        file.close();
+    }
+
+    void searchPatient() {
+        int searchID;
+        bool found = false;
+
+        cout << "Enter Patient ID: ";
+        cin >> searchID;
+
+        ifstream file("hospital.txt");
+
+        while (file >> id >> name >> age >> disease
+                    >> doctor >> bill >> paid >> discharged) {
+            if (id == searchID) {
+                cout << "\nPatient Found!\n";
+                cout << "Name: " << name << endl;
+                cout << "Disease: " << disease << endl;
+                cout << "Total Bill: Rs. " << bill << endl;
+                cout << "Paid: Rs. " << paid << endl;
+                cout << "Balance: Rs. " << bill - paid << endl;
+                cout << "Status: "
+                     << (discharged ? "Discharged" : "Admitted")
+                     << endl;
+                found = true;
+                break;
+            }
+        }
+
+        file.close();
+
+        if (!found)
+            cout << "Patient Not Found!\n";
+    }
+
+    void payment() {
+        int searchID;
+        float amount;
+        bool found = false;
+
+        cout << "Enter Patient ID: ";
+        cin >> searchID;
+
+        ifstream file("hospital.txt");
+        ofstream temp("temp.txt");
+
+        while (file >> id >> name >> age >> disease
+                    >> doctor >> bill >> paid >> discharged) {
+            if (id == searchID) {
+                found = true;
+
+                if (discharged) {
+                    cout << "Patient is already discharged.\n";
+                } else {
+                    cout << "Total Bill: Rs. " << bill << endl;
+                    cout << "Already Paid: Rs. " << paid << endl;
+                    cout << "Balance: Rs. " << bill - paid << endl;
+
+                    cout << "Enter Payment Amount: Rs. ";
+                    cin >> amount;
+
+                    if (amount > 0 && amount <= bill - paid) {
+                        paid += amount;
+                        cout << "Payment Successful!\n";
+                        cout << "Remaining Balance: Rs. "
+                             << bill - paid << endl;
+                    } else {
+                        cout << "Invalid payment amount!\n";
+                    }
+                }
+            }
+
+            temp << id << " " << name << " " << age << " "
+                 << disease << " " << doctor << " "
+                 << bill << " " << paid << " "
+                 << discharged << endl;
+        }
+
+        file.close();
+        temp.close();
+
+        if (found) {
+            remove("hospital.txt");
+            rename("temp.txt", "hospital.txt");
+        } else {
+            remove("temp.txt");
+            cout << "Patient Not Found!\n";
+        }
+    }
+
+    void dischargePatient() {
+        int searchID;
+        bool found = false;
+
+        cout << "Enter Patient ID: ";
+        cin >> searchID;
+
+        ifstream file("hospital.txt");
+        ofstream temp("temp.txt");
+
+        while (file >> id >> name >> age >> disease
+                    >> doctor >> bill >> paid >> discharged) {
+            if (id == searchID) {
+                found = true;
+
+                if (discharged) {
+                    cout << "Patient is already discharged.\n";
+                } else if (paid < bill) {
+                    cout << "Payment is incomplete!\n";
+                    cout << "Please pay remaining Rs. "
+                         << bill - paid << " first.\n";
+                } else {
+                    discharged = 1;
+                    cout << "Patient Discharged Successfully!\n";
+                }
+            }
+
+            temp << id << " " << name << " " << age << " "
+                 << disease << " " << doctor << " "
+                 << bill << " " << paid << " "
+                 << discharged << endl;
+        }
+
+        file.close();
+        temp.close();
+
+        if (found) {
+            remove("hospital.txt");
+            rename("temp.txt", "hospital.txt");
+        } else {
+            remove("temp.txt");
+            cout << "Patient Not Found!\n";
+        }
+    }
+
+    void appointment() {
+        int patientID;
+        string date;
+
+        cout << "Enter Patient ID: ";
+        cin >> patientID;
+
+        cout << "Enter Appointment Date: ";
+        cin >> date;
+
+        cout << "Appointment booked for Patient ID "
+             << patientID << " on " << date << endl;
+    }
+};
+
+int main() {
+    Patient p;
+    int choice;
+
+    do {
+        cout << "\n=== SMART HOSPITAL MANAGEMENT ===\n";
+        cout << "1. Add Patient\n";
+        cout << "2. Display Patients\n";
+        cout << "3. Search Patient\n";
+        cout << "4. Book Appointment\n";
+        cout << "5. Make Payment\n";
+        cout << "6. Discharge Patient\n";
+        cout << "7. Exit\n";
+        cout << "Enter Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            p.addPatient();
+            break;
+
+        case 2:
+            p.displayPatients();
+            break;
+
+        case 3:
+            p.searchPatient();
+            break;
+
+        case 4:
+            p.appointment();
+            break;
+
+        case 5:
+            p.payment();
+            break;
+
+        case 6:
+            p.dischargePatient();
+            break;
+
+        case 7:
+            cout << "Thank You!\n";
+            break;
+
+        default:
+            cout << "Invalid Choice!\n";
+        }
+
+    } while (choice != 7);
+
+    return 0;
+}
